@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion,  } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId,  } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -30,16 +30,7 @@ async function run() {
 
     const brandCollection = client.db("brandDB").collection("brand");
 
-    app.get("/brand", async (req, res) => {
-      const cursor = brandCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
 
-    app.post("/brand", async (req, res) => {
-      const brand = req.body;
-      console.log("new brand: ", brand);
-    });
 
     app.get("/brandCollection", async (req, res) => {
       const cursor = brandCollection.find();
@@ -54,6 +45,44 @@ async function run() {
        res.send(brand)
     })
 
+     app.get("/details/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("new brand: ", id);
+      const query={_id:new ObjectId(id)}
+      const brand=await brandCollection.findOne(query);
+      res.send(brand);
+    });
+
+    app.get("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("new brand: ", id);
+      const query={_id:new ObjectId(id)}
+      const brand=await brandCollection.findOne(query);
+      res.send(brand);
+    });
+    app.put("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedBrand=req.body;
+      console.log(id,updatedBrand)
+      const filter={_id:new ObjectId(id)}
+      const options={upsert:true}
+
+      const brand={
+        $set:{
+          productName:updatedBrand.productName,
+          brandName:updatedBrand.brandName,
+          productType:updatedBrand.productType,
+          price:updatedBrand.price,
+          rating:updatedBrand.rating,
+          img:updatedBrand.img,
+          description:updatedBrand.description
+        }
+      }
+      const result=await brandCollection.updateOne(filter,brand,options)
+      res.send(result);
+    });
+
+
     app.post("/brandCollection", async (req, res) => {
       const brand = req.body;
       console.log(brand);
@@ -61,6 +90,8 @@ async function run() {
       res.send(result)
 
     });
+
+   
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
