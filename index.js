@@ -29,10 +29,10 @@ async function run() {
     await client.connect();
 
     const brandCollection = client.db("brandDB").collection("brand");
+    const cardProductCollection=client.db("brandDB").collection("cardProduct");
 
 
-
-    app.get("/brandCollection", async (req, res) => {
+    app.get("/", async (req, res) => {
       const cursor = brandCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -60,6 +60,16 @@ async function run() {
       const brand=await brandCollection.findOne(query);
       res.send(brand);
     });
+
+    app.post("/brandCollection", async (req, res) => {
+      const brand = req.body;
+      console.log(brand);
+      const result=await brandCollection.insertOne(brand);
+      res.send(result)
+
+    });
+
+
     app.put("/update/:id", async (req, res) => {
       const id = req.params.id;
       const updatedBrand=req.body;
@@ -82,14 +92,44 @@ async function run() {
       res.send(result);
     });
 
+    
+    // card related api
 
-    app.post("/brandCollection", async (req, res) => {
-      const brand = req.body;
-      console.log(brand);
-      const result=await brandCollection.insertOne(brand);
-      res.send(result)
+    app.get('/cardCollection',async(req,res)=>{
+      const cursor=cardProductCollection.find();
+      const result=await cursor.toArray();
+      res.send(result);
+    })
 
-    });
+    
+    app.get('/cardCollection/:email',async(req,res)=>{
+      const email=req.params.email;
+      const query={email:email}
+      console.log(email,query);
+      const result=await cardProductCollection.find(query).toArray()
+      res.send(result);
+    })
+    app.get('/card/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:id}
+      console.log(id,query);
+      const result=await cardProductCollection.findOne(query)
+      res.send(result);
+    })
+
+    app.post("/cardCollection",async(req,res)=>{
+      const addedBrand=req.body;
+      console.log(addedBrand)
+      const result=await cardProductCollection.insertOne(addedBrand);
+      res.send(result);
+    })
+
+    app.delete('/card/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query={_id:id};
+      const result=await cardProductCollection.deleteOne(query)
+      res.send(result);
+    })
 
    
 
